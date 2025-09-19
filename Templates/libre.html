@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Libre Data{% endblock %}
+{% block content %}
+<div class="header">
+  <h1>Libre Glucose (Last 24h)</h1>
+  <div class="user">
+    <a href="{{ url_for('dashboard.dashboard') }}">← Back to Dashboard</a> ·<br><br>
+    <a href="{{ url_for('dashboard.sugar_grading') }}" style="font-weight:bold;">
+      🍭 Sugar Control Grading
+    </a>
+  </div>
+</div>
+<hr />
+
+{% if grouped %}
+  {% for day, rows in grouped.items() %}
+    <h2>{{ day }}</h2>
+    <table>
+      <tr><th>Time</th><th>Glucose (mg/dL)</th></tr>
+      {% for row in rows %}
+        <tr><td>{{ row.time }}</td><td>{{ row.glucose }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endfor %}
+{% else %}
+  <p>No Libre glucose data stored yet.</p>
+{% endif %}
+{% endblock %}

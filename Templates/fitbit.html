@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Fitbit Data{% endblock %}
+{% block content %}
+<div class="header">
+  <h1>Fitbit Steps</h1>
+  <div class="user"><a href="{{ url_for('dashboard.dashboard') }}">← Back to Dashboard</a></div>
+</div>
+<hr />
+
+{% if grouped %}
+  {% for day, rows in grouped.items() %}
+    <h2>{{ day }}</h2>
+    <table>
+      <tr><th>Time</th><th>Steps</th></tr>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.time }}</td>
+          <td>{{ row.steps }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endfor %}
+{% else %}
+  <p>No Fitbit steps stored yet.</p>
+{% endif %}
+{% endblock %}

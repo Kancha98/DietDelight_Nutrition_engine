@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Sugar Control Grading{% endblock %}
+{% block content %}
+<div class="header">
+  <h1>Sugar Control Grading</h1>
+  <div class="user">
+    <a href="{{ url_for('dashboard.libre_data') }}">← Back to Libre Data</a>
+  </div>
+</div>
+<hr />
+
+<table>
+  <tr><td>TIR %</td><td>{{ result.tir_percent }}%</td></tr>
+  <tr><td>TIR Score</td><td>{{ result.tir_score }}</td></tr>
+  <tr><td>Variability (CV)</td><td>{{ result.variability }}%</td></tr>
+  <tr><td>Variability Score</td><td>{{ result.variability_score }}</td></tr>
+  <tr><td>Average Glucose</td><td>{{ result.avg_glucose }} mg/dL</td></tr>
+  <tr><td>Average Score</td><td>{{ result.avg_score }}</td></tr>
+  <tr><td>Spike Count</td><td>{{ result.spike_count }}</td></tr>
+  <tr><td>Spike Score</td><td>{{ result.spike_score }}</td></tr>
+  <tr><td><strong>Final Score</strong></td><td><strong>{{ result.final_score }}/100</strong></td></tr>
+  <tr><td>Grade</td><td>{{ result.grade }}/10</td></tr>
+  <tr><td>Interpretation</td><td>{{ result.interpretation }}</td></tr>
+  <tr><td>Suggested Actions</td><td>{{ result.suggested_actions }}</td></tr>
+</table>
+{% endblock %}

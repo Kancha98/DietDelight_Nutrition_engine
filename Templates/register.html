@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<h1>Create account</h1>
+<form method="post" autocomplete="off">
+  <label for="n">Full name</label>
+  <input id="n" name="name" value="{{ f.name|e }}" required />
+  
+  <label for="e">Email</label>
+  <input id="e" type="email" name="email" value="{{ f.email|e }}" required />
+  
+  <label for="d">Date of birth</label>
+  <input id="d" type="date" name="dob" value="{{ f.dob|e }}" required />
+  
+  <label for="g">Gender</label>
+  <select id="g" name="gender" required>
+    {% for g in ["Male", "Female", "Other", "Prefer not to say"] %}
+      <option value="{{ g }}" {% if f.gender==g %}selected{% endif %}>{{ g }}</option>
+    {% endfor %}
+  </select>
+  
+  <label for="p">Password</label>
+  <input id="p" type="password" name="password" required />
+  
+  <label for="c">Confirm password</label>
+  <input id="c" type="password" name="confirm" required />
+  
+  <button type="submit">Create account</button>
+</form>
+<p class="small">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+{% endblock %}
