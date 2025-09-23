@@ -9,6 +9,7 @@ from config import Config
 import random
 from datetime import datetime, timedelta
 import statistics
+import pprint
 
 
 def get_conn():
@@ -316,6 +317,8 @@ def seed_fake_libre(user_id: int, days: int = 1, meals=None):
 
 
 
+import pprint   # at top of file
+
 def calculate_sugar_grade(user_id: int, hours: int = 48):
     """
     Calculate sugar grading metrics for a given user_id over the last N hours (default: 48h).
@@ -324,10 +327,8 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
     with get_conn() as conn:
         c = conn.cursor()
 
-        # Cutoff time
         from_dt = datetime.now() - timedelta(hours=hours)
 
-        # Fetch glucose values only for this user & period
         c.execute("""
             SELECT glucose FROM libre_glucose
             WHERE user_id=? AND date || ' ' || time >= ?
@@ -338,9 +339,9 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
         glucose_values = [r[0] for r in rows]
 
         if not glucose_values:
-            return None  # no data available
+            return None
 
-        # --- TIR ---
+        # --- all your scoring exactly as you had ---
         in_range_count = sum(1 for v in glucose_values if 70 <= v <= 150)
         tir_percent = (in_range_count / len(glucose_values)) * 100
         if tir_percent >= 90: tir_score = 100
@@ -351,7 +352,6 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
             reduction = int((60 - tir_percent) // 10) * 10
             tir_score = max(0, 70 - reduction)
 
-        # --- Variability (CV) ---
         mean_glucose = statistics.mean(glucose_values)
         std_dev = statistics.stdev(glucose_values) if len(glucose_values) > 1 else 0
         cv = (std_dev / mean_glucose) * 100 if mean_glucose else 0
@@ -361,7 +361,6 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
         elif 41 <= cv <= 50: variability_score = 40
         else: variability_score = 20
 
-        # --- Average glucose ---
         avg_glucose = round(mean_glucose)
         if 90 <= avg_glucose <= 110: avg_score = 100
         elif 111 <= avg_glucose <= 130: avg_score = 90
@@ -369,7 +368,6 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
         elif 151 <= avg_glucose <= 170: avg_score = 50
         else: avg_score = 30
 
-        # --- Spike score ---
         spike_count = 0
         last = None
         for g in glucose_values:
@@ -383,7 +381,6 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
         elif spike_count == 3: spike_score = 40
         else: spike_score = 20
 
-        # --- Final Weighted Score ---
         final_score = round(
             (tir_score * 0.35) +
             (variability_score * 0.25) +
@@ -391,7 +388,6 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
             (spike_score * 0.15)
         )
 
-        # --- Lookup grading matrix ---
         c.execute("""
             SELECT grade, interpretation, suggested_actions
             FROM grading_matrix
@@ -404,7 +400,8 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
         else:
             grade, interpretation, actions = (None, "Unknown", "No suggestions")
 
-        return {
+        # --- Build and print result dict ---
+        result_dict = {
             "tir_percent": round(tir_percent, 2),
             "tir_score": tir_score,
             "variability": round(cv, 2),
@@ -418,6 +415,13 @@ def calculate_sugar_grade(user_id: int, hours: int = 48):
             "interpretation": interpretation,
             "suggested_actions": actions
         }
+
+        print("\n=== Sugar Grade Calculation for user", user_id, " ===", flush=True)
+        pprint.pprint(result_dict, indent=2)   # pretty output
+        print("====================================================\n", flush=True)
+
+        return result_dict
+    
     
 
 import random
